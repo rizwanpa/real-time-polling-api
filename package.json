@@ -2,11 +2,20 @@
   "name": "real-time-polling-api",
   "version": "0.0.0",
   "private": true,
+  "author": "Rizwan Ansari",
+  "keywords": [
+    "express",
+    "rest",
+    "api",
+    "sequelize",
+    "mysql"
+  ],
   "scripts": {
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www"
   },
   "dependencies": {
+    "body-parser": "^1.19.0",
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
     "debug": "~2.6.9",
@@ -16,7 +25,10 @@
     "express-jwt": "^6.0.0",
     "http-errors": "~1.6.3",
     "jsonwebtoken": "^8.5.1",
-    "morgan": "~1.9.1"
+    "morgan": "~1.9.1",
+    "mysql2": "^2.1.0",
+    "sequelize": "^6.3.4",
+    "sequelize-cli": "^6.2.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.4"

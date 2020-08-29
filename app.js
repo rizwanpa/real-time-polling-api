@@ -8,6 +8,9 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
 
+const db = require("./models");
+db.sequelize.sync();
+
 var cors = require('cors');
 var app = express();
 app.use(cors())
