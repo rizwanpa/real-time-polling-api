@@ -11,6 +11,7 @@ module.exports = {
       name: 'Admin',
       email: 'admin@example.com',
       role:roleId,
+      password: 'passw0rd!',
       createdAt: new Date(),
       updatedAt: new Date()
     }])
