@@ -7,6 +7,7 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
 const adminRouter = require('./routes/admin');
+const apiRouter = require('./routes/api');
 
 const db = require("./models");
 db.sequelize.sync();
@@ -28,6 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/login', authRouter);
 app.use('/admin', adminRouter);
+app.use('/api', adminRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

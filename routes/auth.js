@@ -11,6 +11,7 @@ const REFRESH_TOKEN_SECRET = 'z01XOWoyEuASSYH9vexE2BzYKvTko1x23tBeeEPMjyMWcAVzlk
 
 /* GET JWT for authorized user. */
 router.post("/", async function(req, res, next) {
+  console.log('================',req.body)
   let users = await Users.findAll({
     where: {
       email: req.body.email,

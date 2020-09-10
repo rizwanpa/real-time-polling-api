@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   PollOptions.init({
-    poll_id: DataTypes.INTEGER,
+    question_id: DataTypes.INTEGER,
     option: DataTypes.STRING
   }, {
     sequelize,
