@@ -97,27 +97,60 @@ const updatePoll = async (req, res) => {
   }
 };
 
-const getQuestions = async (req, res) => {
+const getPoll = async (req, res) => {
   try {
     let pollId = req.params.id;
-    let poll = await Polls.findAll({
+    let polls = await Polls.findAll({
       where: {
-        id: pollId
+        uuid: pollId
       }
     });
-    poll = poll[0]
-    console.log(poll);
-    let questions = poll.questions();
-    return res.status(200).json({
-      questions
-    });
+    return res.status(200).json(polls[0]);
   } catch (error) {
     return res.status(500).json({ error: error.message })
   }
 }
 
+const getAllPolls = async (req, res) => {
+  try {
+    let pollsAttributes = [
+      'uuid', 'title', 'description', 'status'
+    ];
+    let pollQuestionsAttributes = [
+      'id', 'question',
+    ];
+    let pollOptionsAttributes = [
+      'id', 'option'
+    ];
+    
+    let polls = await Polls.findAll({
+      attributes:pollsAttributes,
+      include: [
+        {
+          model: PollQuestions,
+          as:'questions',
+          attributes:pollQuestionsAttributes,
+          include:[
+            {
+              model: PollOptions,
+              as:'options',
+              attributes:pollOptionsAttributes
+            }
+          ]
+        }
+      ]
+    });
+
+    return res.status(200).json(polls);
+  } catch (error) {
+    return res.status(500).json({ error: error.message })
+  }
+}
+
+
 module.exports = {
   createPoll,
   updatePoll,
-  getQuestions
+  getPoll,
+  getAllPolls
 };

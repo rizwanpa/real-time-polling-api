@@ -8,6 +8,7 @@ var indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
 const adminRouter = require('./routes/admin');
 const pollsRouter = require('./routes/polls');
+const submitPoll = require('./routes/submitpoll');
 
 const db = require("./models");
 db.sequelize.sync();
@@ -30,6 +31,7 @@ app.use('/', indexRouter);
 app.use('/login', authRouter);
 app.use('/admin', adminRouter);
 app.use('/polls', pollsRouter);
+app.use('/submitpoll', submitPoll);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
