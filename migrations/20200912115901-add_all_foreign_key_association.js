@@ -8,7 +8,7 @@ module.exports = {
         type: 'foreign key',
         name: 'user_role_constraint',
         references: {
-          table: 'Role',
+          table: 'Roles',
           field: 'id'
         }
       }),
@@ -41,7 +41,9 @@ module.exports = {
         },
         onDelete: 'cascade',
       })
-    ]);
+    ]).catch((err) => {
+      console.error(err);
+    });
   },
 
   down: async (queryInterface, Sequelize) => {
