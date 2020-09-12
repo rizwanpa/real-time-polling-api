@@ -2,8 +2,8 @@ const { Polls } = require("../models");
 const { PollQuestions } = require("../models");
 const { PollOptions } = require("../models");
 
-console.log("########### PollQuestions", PollQuestions);
-console.log("########### PollOptions", PollOptions);
+const {generateUuid} = require('./../helpers/uuid')
+
 
 const createPoll = async (req, res) => {
   try {
@@ -56,7 +56,10 @@ const createPoll = async (req, res) => {
         break;
     } */
 
-    const poll = await Polls.create(request.poll);
+    let uuid = generateUuid(6);
+    console.log('UUUUUUUUUUUUUUUU',uuid);
+
+    const poll = await Polls.create({...request.poll,uuid});
     let { id } = poll;
     let questions = request.questions.map(val => {
       return { ...val, poll_id: id };
@@ -84,6 +87,37 @@ const createPoll = async (req, res) => {
   }
 };
 
+
+
+const updatePoll = async (req, res) => {
+  try {
+    return res.status(201).send('uodatePoll');
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+const getQuestions = async (req, res) => {
+  try {
+    let pollId = req.params.id;
+    let poll = await Polls.findAll({
+      where: {
+        id: pollId
+      }
+    });
+    poll = poll[0]
+    console.log(poll);
+    let questions = poll.questions();
+    return res.status(200).json({
+      questions
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message })
+  }
+}
+
 module.exports = {
-  createPoll
+  createPoll,
+  updatePoll,
+  getQuestions
 };

@@ -13,17 +13,13 @@ const bodyParser = require('body-parser');
 router.post("/", jwtmiddleware, Polls.createPoll);
 
 // update poll
-router.put("/", jwtmiddleware, async function(req, res) {
-  
-});
+router.put("/", jwtmiddleware, Polls.updatePoll);
 
 // get polls
-router.get("/", jwtmiddleware, async function(req, res) {
-  
-});
+router.get("/:id", jwtmiddleware, Polls.getQuestions);
 
 // delete poll
-router.delete("/", jwtmiddleware, async function(req, res) {
+router.delete("/:id", jwtmiddleware, async function(req, res) {
   
 });
 

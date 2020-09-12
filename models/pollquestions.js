@@ -11,6 +11,14 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      PollQuestions.belongsTo(models.Polls, {
+        foreignKey: 'poll_id',
+        onDelete: 'CASCADE'
+      });
+      PollQuestions.hasMany(models.PollOptions,{
+        as:'options',
+        foreignKey: 'question_id'
+      });
     }
   };
   PollQuestions.init({
