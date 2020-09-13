@@ -1,6 +1,4 @@
-const { Polls } = require("../models");
-const { PollQuestions } = require("../models");
-const { PollOptions } = require("../models");
+const { Polls, PollQuestions, PollOptions, PollResponse } = require("../models");
 
 const { generateUuid } = require("./../helpers/uuid");
 const jwt = require("jsonwebtoken");
@@ -369,10 +367,91 @@ const deletePoll = async (req, res, action = "") => {
   }
 };
 
+const getResult = async (req, res) => {
+  try {
+    let pollsAttributes = ["id", "uuid", "title", "description", "status"];
+    let pollQuestionsAttributes = ["id", "question"];
+    let pollOptionsAttributes = ["id", "option"];
+
+    let pollUuid = req.params.uuid; 
+    let polls = await Polls.findAll({
+      where: {
+        uuid: pollUuid
+      },
+      attributes: pollsAttributes,
+      include: [
+        {
+          model: PollQuestions,
+          as: "questions",
+          attributes: pollQuestionsAttributes,
+          include: [
+            {
+              model: PollOptions,
+              as: "options",
+              attributes: pollOptionsAttributes
+            }
+          ]
+        }
+      ]
+    });
+
+    let poll = polls[0];
+
+    let responseStructure = {};
+    poll.questions.forEach((question) => {
+      if(!responseStructure[question.id]) {
+        responseStructure[question.id] = {}
+      }
+      question.options.forEach(option => {
+        if(!responseStructure[question.id][option.id]) {
+          responseStructure[question.id][option.id] = 0;
+        }
+        if(!responseStructure[question.id]["total"]) {
+          responseStructure[question.id]["total"] = 0;
+        }
+      })
+    })
+
+    /* create structure */
+    if(polls[0]) {
+      let pollId = polls[0].id;
+      let responses = await PollResponse.findAll({
+        where: {
+          poll_id:pollId
+        }
+      });
+
+      let resp = {}
+
+      responses.forEach(response => {
+        responseStructure[response.question_id][response.option_id]++;
+        responseStructure[response.question_id].total++;
+      })
+
+      let formattedResult = {}
+      
+      for(let questionId in responseStructure) {
+        if(!formattedResult[questionId]) {
+          formattedResult[questionId] = {}
+        }
+        let options = Object.keys(responseStructure[questionId]);
+        options.forEach(option => {
+          formattedResult[questionId][option] = Math.round((responseStructure[questionId][option]/responseStructure[questionId].total) * 100)
+        })
+      }
+
+      res.json({responseStructure, formattedResult});
+    }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createPoll,
   updatePoll,
   getPoll,
   getAllPolls,
-  deletePoll
+  deletePoll,
+  getResult
 };

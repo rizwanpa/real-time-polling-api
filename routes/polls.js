@@ -18,11 +18,16 @@ router.put("/", jwtmiddleware, Polls.updatePoll);
 // get polls
 router.get("/", jwtmiddleware, Polls.getAllPolls);
 
+// get poll result
+router.get("/result/:uuid", jwtmiddleware, Polls.getResult);
+
 // get poll
 router.get("/:id", jwtmiddleware, Polls.getPoll);
 
 // delete poll
 router.delete("/:id", jwtmiddleware, Polls.deletePoll);
+
+
 
 
 /*router.post("/", jwtmiddleware, async function(req, res, next) {
