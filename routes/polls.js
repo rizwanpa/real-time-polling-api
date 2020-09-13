@@ -22,9 +22,7 @@ router.get("/", jwtmiddleware, Polls.getAllPolls);
 router.get("/:id", jwtmiddleware, Polls.getPoll);
 
 // delete poll
-router.delete("/:id", jwtmiddleware, async function(req, res) {
-  
-});
+router.delete("/:id", jwtmiddleware, Polls.deletePoll);
 
 
 /*router.post("/", jwtmiddleware, async function(req, res, next) {

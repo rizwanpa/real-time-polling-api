@@ -329,9 +329,50 @@ const getAllPolls = async (req, res) => {
   }
 };
 
+const deletePoll = async (req, res, action = "") => {
+  try {
+    let pollId = req.params.id !== undefined ? req.params.id : req.body.id;
+    let polls = await Polls.findAll({
+      where: {
+        [Op.or]: [{ id: pollId }, { uuid: pollId }]
+      },
+      include: [
+        {
+          model: PollQuestions,
+          as: "questions",
+          attributes:['id'],
+         /*  include: [
+            {
+              model: PollOptions,
+              as: "options",
+              attributes:['id','question_id']
+            }
+          ] */
+        }
+      ]
+    });
+    if(!polls.length){
+      return res.status(404).json(`Record not found`);
+    }
+    if(polls[0].questions !== undefined){
+      let questionIds = polls[0].questions.map(val=> val.id)
+      PollOptions.destroy({ where: { id: questionIds }}).then((deleteOptions)=>{
+        PollQuestions.destroy({ where: { id: pollId }}).then((deleteQueston)=>{
+          Polls.destroy({ where: { id: pollId }}).then((deletePollRec)=>{
+            return res.status(200).json(`Poll ${pollId} deleted successfully`);
+          })
+        })
+      })
+    }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createPoll,
   updatePoll,
   getPoll,
-  getAllPolls
+  getAllPolls,
+  deletePoll
 };
