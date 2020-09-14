@@ -2,6 +2,7 @@ require('dotenv').config();
 var express = require("express");
 var router = express.Router();
 const { Polls, PollResponse } = require("../models");
+const { submitPoll } = require('../queues/submitandnotify')
 
 // submit poll
 router.post("/", async (req, res) => {
@@ -26,8 +27,13 @@ router.post("/", async (req, res) => {
           })
         })
       })
-      let resp = await PollResponse.bulkCreate(finalRequest);
-      res.json({resp})
+      
+      // add to queue and send response via socket
+      submitPoll.add(finalRequest)
+      // await PollResponse.bulkCreate(finalRequest);
+      res.status(200).json({
+        message:'Your response is successfully submitted.'
+      })
     }
   } catch(err) {
     console.error(err);
