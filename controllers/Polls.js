@@ -81,7 +81,7 @@ const createPoll = async (req, res) => {
       description: request.description || "",
       status: request.status || "Draft",
       start_date: request.start_date || Date.now(),
-      end_date: request.end_date || Date.now(),
+      end_date: request.end_date || Date.now()+(24*60*60*1000),
       uuid,
       user_id
     };
@@ -217,8 +217,8 @@ const updatePoll = async (req, res) => {
             let { questions } = request;
             //return false;
             for (let i = 0; i < questions.length; i++) {
-              console.log('@@@@@@@@@@@@@@@@@@@@@@questionObj@@@@@@@@',questionIds,questions[i].id);
-              console.log(questions[i].id !== undefined ,((questions[i].id) in questionIds), questionIds.includes(questions[i].id), typeof questions[i].id);
+              console.log('@@@@@@@@@@@@@@@@@@@@@@questionObj@@@@@@@@', questionIds, questions[i].id);
+              console.log(questions[i].id !== undefined, ((questions[i].id) in questionIds), questionIds.includes(questions[i].id), typeof questions[i].id);
               /* let currentOptions, requestOptions = []
               if(questionObj[i] !== undefined){
                 currentOptions = questionObj[i].options.map(
@@ -239,7 +239,7 @@ const updatePoll = async (req, res) => {
                 questions[i].id !== undefined &&
                 (questionIds.includes(questions[i].id))
               ) {
-                console.log('&&&&&&&&&&&&&&&&&&inside update questions&&&&&&&&&&',questions[i]);
+                console.log('&&&&&&&&&&&&&&&&&&inside update questions&&&&&&&&&&', questions[i]);
                 //update
                 let updateQue = {
                   question: questions[i].question,
@@ -269,7 +269,7 @@ const updatePoll = async (req, res) => {
                   // [ 1 ]
                 });
               } else {
-                console.log('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5inside else %%%%%%%%%%%%%%',questions[i])
+                console.log('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5inside else %%%%%%%%%%%%%%', questions[i])
                 //insert
                 let updateQue = {
                   poll_id: request.id,
@@ -297,7 +297,7 @@ const updatePoll = async (req, res) => {
       }
     });
     //console.log("request-->>>>>", request);
-    return res.status(201).json(polls);
+    return res.status(200).json('Record Updated successfully');
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -481,15 +481,17 @@ const getResult = async (req, res) => {
         }
         let options = Object.keys(responseStructure[questionId]);
         options.forEach(option => {
-          formattedResult[questionId][option] = Math.round(
-            (responseStructure[questionId][option] /
-              responseStructure[questionId].total) *
+          if (option !== 'total') {
+            formattedResult[questionId][option] = Math.round(
+              (responseStructure[questionId][option] /
+                responseStructure[questionId].total) *
               100
-          );
+            );
+          }
         });
       }
 
-      res.json({ responseStructure, formattedResult });
+      res.json({ formattedResult });
     }
   } catch (error) {
     return res.status(500).json({ error: error.message });
