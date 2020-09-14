@@ -11,7 +11,7 @@ module.exports = {
       name: 'Admin',
       email: 'admin@example.com',
       role:roleId,
-      password: 'passw0rd!',
+      password: Buffer.from('passw0rd!').toString('base64'),
       createdAt: new Date(),
       updatedAt: new Date()
     }])

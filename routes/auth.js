@@ -11,7 +11,7 @@ router.post("/", async function(req, res, next) {
   let users = await Users.findAll({
     where: {
       email: req.body.email,
-      password: req.body.password
+      password: Buffer.from(req.body.password).toString('base64')
     }
   });
   let user = users[0];
