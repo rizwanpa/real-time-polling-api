@@ -1,7 +1,7 @@
 {
   "development": {
     "username": "root",
-    "password": "root",
+    "password": "passw0rd!",
     "database": "realtimepolling",
     "host": "127.0.0.1",
     "dialect": "mysql"
