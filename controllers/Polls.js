@@ -1,4 +1,9 @@
-const { Polls, PollQuestions, PollOptions, PollResponse } = require("../models");
+const {
+  Polls,
+  PollQuestions,
+  PollOptions,
+  PollResponse
+} = require("../models");
 
 const { generateUuid } = require("./../helpers/uuid");
 const jwt = require("jsonwebtoken");
@@ -67,7 +72,7 @@ const createPoll = async (req, res) => {
       }
     }
 
-    let uuid = generateUuid(6);
+    let uuid = await generateUuid(6);
     let token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     let user_id = decoded.id;
@@ -75,8 +80,8 @@ const createPoll = async (req, res) => {
       title: request.title || "Title",
       description: request.description || "",
       status: request.status || "Draft",
-      start_date: request.start_date || new Date(),
-      end_date: request.end_date || "",
+      start_date: request.start_date || Date.now(),
+      end_date: request.end_date || Date.now(),
       uuid,
       user_id
     };
@@ -196,16 +201,45 @@ const updatePoll = async (req, res) => {
         };
         obj.update(pollParams).then(pollUpdatedObj => {
           PollQuestions.findAll({
-            where: { poll_id: request.id }
+            where: { poll_id: request.id },
+            include: [
+              {
+                model: PollOptions,
+                as: "options"
+                //attributes:pollOptionsAttributes
+              }
+            ]
           }).then(questionObj => {
             let questionIds = questionObj.map(val => val.id);
+            /* let questionOptionArr = questionObj.map(val => {
+              return {[val.id] : val.options.map(option => option.id) }
+            }); */
             let { questions } = request;
+            //return false;
             for (let i = 0; i < questions.length; i++) {
-              console.log(questions[i].id !== undefined , questionIds.includes(questions[i].id), typeof questions[i].id);
+              console.log('@@@@@@@@@@@@@@@@@@@@@@questionObj@@@@@@@@',questionIds,questions[i].id);
+              console.log(questions[i].id !== undefined ,((questions[i].id) in questionIds), questionIds.includes(questions[i].id), typeof questions[i].id);
+              /* let currentOptions, requestOptions = []
+              if(questionObj[i] !== undefined){
+                currentOptions = questionObj[i].options.map(
+                  option => option.id
+                  );
+                }
+              if(questions[i] !== undefined){
+
+                requestOptions = questions[i].options.map(
+                  option => option.id
+                  );
+                }
+              let destroyOptions = currentOptions.filter(function(i) {
+                return this.indexOf(i) < 0;
+              }, requestOptions); */
+              //PollOptions.destroy({ where: { id: destroyOptions } });
               if (
                 questions[i].id !== undefined &&
-                questionIds.includes(questions[i].id)
+                (questionIds.includes(questions[i].id))
               ) {
+                console.log('&&&&&&&&&&&&&&&&&&inside update questions&&&&&&&&&&',questions[i]);
                 //update
                 let updateQue = {
                   question: questions[i].question,
@@ -217,40 +251,44 @@ const updatePoll = async (req, res) => {
                 }).then(result => {
                   // here your result is simply an array with number of affected rows
                   //update
-                  let {options} = questions[i];
+                  let { options } = questions[i];
                   if (options !== undefined) {
                     options = options.map(val => {
                       return { ...val, question_id: questions[i].id };
                     });
-                    PollOptions.bulkCreate(options, {updateOnDuplicate:['question_id']}).then((optionRes)=>{
+                    PollOptions.bulkCreate(options, {
+                      updateOnDuplicate: ["option"]
+                    }).then(optionRes => {
+                      console.log('__________________BUKLCREATION UPDATE')
                       //questionRes.push({ ...qRes.dataValues, options: optionRes });
                     });
                   } else {
                     //questionRes.push({ ...qRes.dataValues, options: [] });
                   }
-                  console.log("1111111111111111111result", result);
+                  //console.log("1111111111111111111result", result);
                   // [ 1 ]
                 });
               } else {
+                console.log('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5inside else %%%%%%%%%%%%%%',questions[i])
                 //insert
                 let updateQue = {
-                  poll_id : request.id,
+                  poll_id: request.id,
                   question: questions[i].question,
                   type: questions[i].type
                 };
                 PollQuestions.create(updateQue).then(qRes => {
-                  let {options} = questions[i];
+                  let { options } = questions[i];
                   if (options !== undefined) {
                     options = options.map(val => {
                       return { ...val, question_id: qRes.id };
                     });
-                    PollOptions.bulkCreate(options).then((optionRes)=>{
+                    PollOptions.bulkCreate(options).then(optionRes => {
                       //questionRes.push({ ...qRes.dataValues, options: optionRes });
                     });
                   } else {
                     //questionRes.push({ ...qRes.dataValues, options: [] });
                   }
-                  console.log("222222222222222 insert", qRes);
+                  //console.log("222222222222222 insert", qRes);
                 });
               }
             }
@@ -258,7 +296,7 @@ const updatePoll = async (req, res) => {
         });
       }
     });
-    console.log("request-->>>>>", request);
+    //console.log("request-->>>>>", request);
     return res.status(201).json(polls);
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -287,10 +325,11 @@ const getPoll = async (req, res, action = "") => {
         }
       ]
     });
+    polls = polls.length ? polls[0] : [];
     if (action === "returnVal") {
-      return polls[0];
+      return polls;
     } else {
-      return res.status(200).json(polls[0]);
+      return res.status(200).json(polls);
     }
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -338,8 +377,8 @@ const deletePoll = async (req, res, action = "") => {
         {
           model: PollQuestions,
           as: "questions",
-          attributes:['id'],
-         /*  include: [
+          attributes: ["id"]
+          /*  include: [
             {
               model: PollOptions,
               as: "options",
@@ -349,18 +388,24 @@ const deletePoll = async (req, res, action = "") => {
         }
       ]
     });
-    if(!polls.length){
+    if (!polls.length) {
       return res.status(404).json(`Record not found`);
     }
-    if(polls[0].questions !== undefined){
-      let questionIds = polls[0].questions.map(val=> val.id)
-      PollOptions.destroy({ where: { id: questionIds }}).then((deleteOptions)=>{
-        PollQuestions.destroy({ where: { id: pollId }}).then((deleteQueston)=>{
-          Polls.destroy({ where: { id: pollId }}).then((deletePollRec)=>{
-            return res.status(200).json(`Poll ${pollId} deleted successfully`);
-          })
-        })
-      })
+    if (polls[0].questions !== undefined) {
+      let questionIds = polls[0].questions.map(val => val.id);
+      PollOptions.destroy({ where: { id: questionIds } }).then(
+        deleteOptions => {
+          PollQuestions.destroy({ where: { id: pollId } }).then(
+            deleteQueston => {
+              Polls.destroy({ where: { id: pollId } }).then(deletePollRec => {
+                return res
+                  .status(200)
+                  .json(`Poll ${pollId} deleted successfully`);
+              });
+            }
+          );
+        }
+      );
     }
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -373,7 +418,7 @@ const getResult = async (req, res) => {
     let pollQuestionsAttributes = ["id", "question"];
     let pollOptionsAttributes = ["id", "option"];
 
-    let pollUuid = req.params.uuid; 
+    let pollUuid = req.params.uuid;
     let polls = await Polls.findAll({
       where: {
         uuid: pollUuid
@@ -398,49 +443,53 @@ const getResult = async (req, res) => {
     let poll = polls[0];
 
     let responseStructure = {};
-    poll.questions.forEach((question) => {
-      if(!responseStructure[question.id]) {
-        responseStructure[question.id] = {}
+    poll.questions.forEach(question => {
+      if (!responseStructure[question.id]) {
+        responseStructure[question.id] = {};
       }
       question.options.forEach(option => {
-        if(!responseStructure[question.id][option.id]) {
+        if (!responseStructure[question.id][option.id]) {
           responseStructure[question.id][option.id] = 0;
         }
-        if(!responseStructure[question.id]["total"]) {
+        if (!responseStructure[question.id]["total"]) {
           responseStructure[question.id]["total"] = 0;
         }
-      })
-    })
+      });
+    });
 
     /* create structure */
-    if(polls[0]) {
+    if (polls[0]) {
       let pollId = polls[0].id;
       let responses = await PollResponse.findAll({
         where: {
-          poll_id:pollId
+          poll_id: pollId
         }
       });
 
-      let resp = {}
+      let resp = {};
 
       responses.forEach(response => {
         responseStructure[response.question_id][response.option_id]++;
         responseStructure[response.question_id].total++;
-      })
+      });
 
-      let formattedResult = {}
-      
-      for(let questionId in responseStructure) {
-        if(!formattedResult[questionId]) {
-          formattedResult[questionId] = {}
+      let formattedResult = {};
+
+      for (let questionId in responseStructure) {
+        if (!formattedResult[questionId]) {
+          formattedResult[questionId] = {};
         }
         let options = Object.keys(responseStructure[questionId]);
         options.forEach(option => {
-          formattedResult[questionId][option] = Math.round((responseStructure[questionId][option]/responseStructure[questionId].total) * 100)
-        })
+          formattedResult[questionId][option] = Math.round(
+            (responseStructure[questionId][option] /
+              responseStructure[questionId].total) *
+              100
+          );
+        });
       }
 
-      res.json({responseStructure, formattedResult});
+      res.json({ responseStructure, formattedResult });
     }
   } catch (error) {
     return res.status(500).json({ error: error.message });
