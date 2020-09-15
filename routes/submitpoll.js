@@ -29,16 +29,15 @@ router.post("/", async (req, res) => {
       })
       
       // add to queue and send response via socket
-      console.log('~~~~~~~~~~~~~~~finalRequest inside submit Poll',finalRequest)
-      try{
+      try {
         submitPoll.add(finalRequest);
         res.status(200).json({
           message:'Your response is successfully submitted.'
         });
-      }catch(err){
+      } catch(err) {
         return res.status(422).json({
           message: 'There was an unexpected error submitting your advert.',
-      });
+        });
       }
       //await PollResponse.bulkCreate(finalRequest);
     }
