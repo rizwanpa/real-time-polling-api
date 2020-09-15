@@ -4,12 +4,14 @@ const { PollResponse } = require("../models");
 
 submitPoll.process(async pollResponse => {
   try {
+    console.log('submit queue===>',pollResponse);
     await PollResponse.bulkCreate(finalRequest);
-    // store calculation
+    // store 
+    
     // send message through socket
   } catch (err) {
       return Promise.reject(err);
   }
 });
 
-module.exports = submitPoll;
+module.exports = {submitPoll};
