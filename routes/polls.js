@@ -26,8 +26,24 @@ router.get("/:id", jwtmiddleware, Polls.getPoll);
 
 // delete poll
 router.delete("/:id", jwtmiddleware, Polls.deletePoll);
+/* 
+* URI : http://localhost:3030/polls/getTopPolls
+* Params : JSON object
+* {
+  status: 'published',
+  sort: 'end_date', // start_date, totalResponses 
+  order: 'desc',
+  limit: 5,
+  range: {
+    fromDate:'',
+    toDate:''
+  },
+  title: '',
+}
+*
+*/
 
-
+router.post("/getTopPolls", jwtmiddleware, Polls.getTopPolls);
 
 
 /*router.post("/", jwtmiddleware, async function(req, res, next) {

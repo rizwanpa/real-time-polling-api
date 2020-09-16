@@ -17,7 +17,7 @@ router.post("/", async (req, res) => {
     if(polls[0]) {
       let finalRequest = [];
       let poll = polls[0];
-
+      
       pollResponse.questions.forEach((question) => {
         question.options.forEach((option) => {
           finalRequest.push({
@@ -27,10 +27,11 @@ router.post("/", async (req, res) => {
           })
         })
       })
+      console.log('===>',poll.id,finalRequest);
       
       // add to queue and send response via socket
       try {
-        submitPoll.add(finalRequest);
+        submitPoll.add({id :poll.id, finalRequest});
         res.status(200).json({
           message:'Your response is successfully submitted.'
         });

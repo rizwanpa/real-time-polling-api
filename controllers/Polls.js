@@ -2,7 +2,8 @@ const {
   Polls,
   PollQuestions,
   PollOptions,
-  PollResponse
+  PollResponse,
+  PollResult
 } = require("../models");
 
 const { generateUuid } = require("./../helpers/uuid");
@@ -498,11 +499,63 @@ const getResult = async (req, res) => {
   }
 };
 
+const getTopPolls = async (req, res) => {
+  try {
+    let request = req.body;
+    //console.log('request=======',request,req.params,req.query);
+    let pollsAttributes = ["id","uuid", "title", "description", "status"];
+    let pollQuestionsAttributes = ["id", "question"];
+    let pollOptionsAttributes = ["id", "option"];
+
+    let polls = await Polls.findAll({
+      attributes: pollsAttributes,
+      include: [
+        {
+          model: PollQuestions,
+          as: "questions",
+          attributes: pollQuestionsAttributes,
+          include: [
+            {
+              model: PollOptions,
+              as: "options",
+              attributes: pollOptionsAttributes
+            }
+          ]
+        }
+      ]
+    });
+
+    polls.forEach((poll)=>{
+      let poll_id = poll.id;
+      //console.log('~~~~~~~~~~~~~~~~~~~~~~',poll);
+      poll.questions.forEach(question=>{
+        let question_id = question.id;
+        question.options.forEach(async option=>{
+          let option_id = option.id;
+          let percentage = await PollResult.findOne({
+            where: { poll_id,question_id, option_id },
+            attributes: ['percentage']
+          })
+          console.log('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',polls);
+          //polls[poll]['questions'][question]['options'][option]
+
+        })
+      })
+
+    });
+
+    return res.status(200).json(polls);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createPoll,
   updatePoll,
   getPoll,
   getAllPolls,
   deletePoll,
-  getResult
+  getResult,
+  getTopPolls
 };
