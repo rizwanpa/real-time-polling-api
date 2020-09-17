@@ -502,13 +502,48 @@ const getResult = async (req, res) => {
 const getTopPolls = async (req, res) => {
   try {
     let request = req.body;
-    //console.log('request=======',request,req.params,req.query);
     let pollsAttributes = ["id","uuid", "title", "description", "status"];
     let pollQuestionsAttributes = ["id", "question"];
     let pollOptionsAttributes = ["id", "option"];
-
+    let where = {}
+    if(request.status !== undefined && request.status !== ''){
+      where = {
+        ...where,
+        status: request.status
+      }
+    }
+    if(request.fromDate !== undefined && request.fromDate !== ''){
+      where = {
+        ...where,
+        start_date: {
+          $gte: request.fromDate
+        }
+      }
+    }
+    if(request.endDate !== undefined && request.endDate !== ''){
+      where = {
+        ...where,
+        end_date: {
+          $lte: request.endDate
+        }
+      }
+    }
+    if(request.title !== undefined && request.title !== ''){
+      where = {
+        ...where,
+        title: {
+          [Op.like]: `%${request.title}%`
+        }
+      }
+    }
+    let limit = 100;
+    if(request.limit !== undefined && request.limit !== ''){
+      limit = request.limit;
+    }
     let polls = await Polls.findAll({
       attributes: pollsAttributes,
+      limit: limit,
+      where : where,
       include: [
         {
           model: PollQuestions,
@@ -525,24 +560,22 @@ const getTopPolls = async (req, res) => {
       ]
     });
 
-    polls.forEach((poll)=>{
-      let poll_id = poll.id;
-      //console.log('~~~~~~~~~~~~~~~~~~~~~~',poll);
-      poll.questions.forEach(question=>{
-        let question_id = question.id;
-        question.options.forEach(async option=>{
-          let option_id = option.id;
-          let percentage = await PollResult.findOne({
+    polls = JSON.parse(JSON.stringify(polls));
+    for(let pollIndex= 0; pollIndex<Object.keys(polls).length; pollIndex++){
+      let poll_id = polls[pollIndex].id;
+      for(let questionIndex = 0; questionIndex<Object.keys(polls[pollIndex].questions).length; questionIndex++){
+        let question_id = polls[pollIndex].questions[questionIndex].id;
+        for(let optionIndes = 0; optionIndes < Object.keys(polls[pollIndex].questions[questionIndex].options).length; optionIndes++){
+          let option_id =  polls[pollIndex].questions[questionIndex].options[optionIndes].id;
+          let resultRes = await PollResult.findOne({
             where: { poll_id,question_id, option_id },
             attributes: ['percentage']
-          })
-          console.log('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',polls);
-          //polls[poll]['questions'][question]['options'][option]
-
-        })
-      })
-
-    });
+          });
+          let percentage = (resultRes !== undefined && resultRes !== null) ? resultRes.percentage : 0;
+          polls[pollIndex].questions[questionIndex].options[optionIndes].percentage = percentage;
+        }
+      }
+    }
 
     return res.status(200).json(polls);
   } catch (error) {
