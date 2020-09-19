@@ -29,7 +29,7 @@ router.delete("/:id", jwtmiddleware, Polls.deletePoll);
 /* 
 * URI : http://localhost:3030/polls/getTopPolls
 * Method : POST
-* Params : JSON object
+* Params : JSON object (All params are optional)
 * {
 	"status": "published", (OPTIONAL)
     "sort": "end_date", (OPTIONAL)

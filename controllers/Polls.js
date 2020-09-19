@@ -82,7 +82,7 @@ const createPoll = async (req, res) => {
       description: request.description || "",
       status: request.status || "Draft",
       start_date: request.start_date || Date.now(),
-      end_date: request.end_date || Date.now()+(24*60*60*1000),
+      end_date: request.end_date || Date.now() + (24 * 60 * 60 * 1000),
       uuid,
       user_id
     };
@@ -378,35 +378,45 @@ const deletePoll = async (req, res, action = "") => {
         {
           model: PollQuestions,
           as: "questions",
-          attributes: ["id"]
-          /*  include: [
+          attributes: ["id"],
+          include: [
             {
               model: PollOptions,
               as: "options",
-              attributes:['id','question_id']
+              attributes: ['id', 'question_id']
             }
-          ] */
+          ]
         }
       ]
     });
+    polls = JSON.parse(JSON.stringify(polls));
     if (!polls.length) {
       return res.status(404).json(`Record not found`);
     }
-    if (polls[0].questions !== undefined) {
-      let questionIds = polls[0].questions.map(val => val.id);
-      PollOptions.destroy({ where: { id: questionIds } }).then(
-        deleteOptions => {
-          PollQuestions.destroy({ where: { id: pollId } }).then(
-            deleteQueston => {
-              Polls.destroy({ where: { id: pollId } }).then(deletePollRec => {
-                return res
-                  .status(200)
-                  .json(`Poll ${pollId} deleted successfully`);
-              });
-            }
-          );
-        }
-      );
+    polls = polls[0];
+    if (polls.questions !== undefined) {
+      let questionIds = polls.questions.map(val => val.id);
+      if (!questionIds.length) {
+        PollOptions.destroy({ where: { id: questionIds } }).then(
+          deleteOptions => {
+            PollQuestions.destroy({ where: { id: polls.id } }).then(
+              deleteQueston => {
+                Polls.destroy({ where: { id: polls.id } }).then(deletePollRec => {
+                  return res
+                    .status(200)
+                    .json(`Poll ${pollId} deleted successfully`);
+                });
+              }
+            );
+          }
+        );
+      } else {
+        Polls.destroy({ where: { id: polls.id } }).then(deletePollRec => {
+          return res
+            .status(200)
+            .json(`Poll ${pollId} deleted successfully`);
+        });
+      }
     }
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -502,17 +512,17 @@ const getResult = async (req, res) => {
 const getTopPolls = async (req, res) => {
   try {
     let request = req.body;
-    let pollsAttributes = ["id","uuid", "title", "description", "status"];
+    let pollsAttributes = ["id", "uuid", "title", "description", "status"];
     let pollQuestionsAttributes = ["id", "question"];
     let pollOptionsAttributes = ["id", "option"];
     let where = {}
-    if(request.status !== undefined && request.status !== ''){
+    if (request.status !== undefined && request.status !== '') {
       where = {
         ...where,
         status: request.status
       }
     }
-    if(request.fromDate !== undefined && request.fromDate !== ''){
+    if (request.fromDate !== undefined && request.fromDate !== '') {
       where = {
         ...where,
         start_date: {
@@ -520,7 +530,7 @@ const getTopPolls = async (req, res) => {
         }
       }
     }
-    if(request.endDate !== undefined && request.endDate !== ''){
+    if (request.endDate !== undefined && request.endDate !== '') {
       where = {
         ...where,
         end_date: {
@@ -528,7 +538,7 @@ const getTopPolls = async (req, res) => {
         }
       }
     }
-    if(request.title !== undefined && request.title !== ''){
+    if (request.title !== undefined && request.title !== '') {
       where = {
         ...where,
         title: {
@@ -537,13 +547,13 @@ const getTopPolls = async (req, res) => {
       }
     }
     let limit = 100;
-    if(request.limit !== undefined && request.limit !== ''){
+    if (request.limit !== undefined && request.limit !== '') {
       limit = request.limit;
     }
     let polls = await Polls.findAll({
       attributes: pollsAttributes,
       limit: limit,
-      where : where,
+      where: where,
       include: [
         {
           model: PollQuestions,
@@ -561,14 +571,14 @@ const getTopPolls = async (req, res) => {
     });
 
     polls = JSON.parse(JSON.stringify(polls));
-    for(let pollIndex= 0; pollIndex<Object.keys(polls).length; pollIndex++){
+    for (let pollIndex = 0; pollIndex < Object.keys(polls).length; pollIndex++) {
       let poll_id = polls[pollIndex].id;
-      for(let questionIndex = 0; questionIndex<Object.keys(polls[pollIndex].questions).length; questionIndex++){
+      for (let questionIndex = 0; questionIndex < Object.keys(polls[pollIndex].questions).length; questionIndex++) {
         let question_id = polls[pollIndex].questions[questionIndex].id;
-        for(let optionIndes = 0; optionIndes < Object.keys(polls[pollIndex].questions[questionIndex].options).length; optionIndes++){
-          let option_id =  polls[pollIndex].questions[questionIndex].options[optionIndes].id;
+        for (let optionIndes = 0; optionIndes < Object.keys(polls[pollIndex].questions[questionIndex].options).length; optionIndes++) {
+          let option_id = polls[pollIndex].questions[questionIndex].options[optionIndes].id;
           let resultRes = await PollResult.findOne({
-            where: { poll_id,question_id, option_id },
+            where: { poll_id, question_id, option_id },
             attributes: ['percentage']
           });
           let percentage = (resultRes !== undefined && resultRes !== null) ? resultRes.percentage : 0;
