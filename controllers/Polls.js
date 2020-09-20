@@ -82,7 +82,7 @@ const createPoll = async (req, res) => {
       description: request.description || "",
       status: request.status || "Draft",
       start_date: request.start_date || Date.now(),
-      end_date: request.end_date || Date.now() + (24 * 60 * 60 * 1000),
+      end_date: request.end_date || Date.now() + 24 * 60 * 60 * 1000,
       uuid,
       user_id
     };
@@ -218,8 +218,17 @@ const updatePoll = async (req, res) => {
             let { questions } = request;
             //return false;
             for (let i = 0; i < questions.length; i++) {
-              console.log('@@@@@@@@@@@@@@@@@@@@@@questionObj@@@@@@@@', questionIds, questions[i].id);
-              console.log(questions[i].id !== undefined, ((questions[i].id) in questionIds), questionIds.includes(questions[i].id), typeof questions[i].id);
+              console.log(
+                "@@@@@@@@@@@@@@@@@@@@@@questionObj@@@@@@@@",
+                questionIds,
+                questions[i].id
+              );
+              console.log(
+                questions[i].id !== undefined,
+                questions[i].id in questionIds,
+                questionIds.includes(questions[i].id),
+                typeof questions[i].id
+              );
               /* let currentOptions, requestOptions = []
               if(questionObj[i] !== undefined){
                 currentOptions = questionObj[i].options.map(
@@ -238,9 +247,12 @@ const updatePoll = async (req, res) => {
               //PollOptions.destroy({ where: { id: destroyOptions } });
               if (
                 questions[i].id !== undefined &&
-                (questionIds.includes(questions[i].id))
+                questionIds.includes(questions[i].id)
               ) {
-                console.log('&&&&&&&&&&&&&&&&&&inside update questions&&&&&&&&&&', questions[i]);
+                console.log(
+                  "&&&&&&&&&&&&&&&&&&inside update questions&&&&&&&&&&",
+                  questions[i]
+                );
                 //update
                 let updateQue = {
                   question: questions[i].question,
@@ -260,7 +272,7 @@ const updatePoll = async (req, res) => {
                     PollOptions.bulkCreate(options, {
                       updateOnDuplicate: ["option"]
                     }).then(optionRes => {
-                      console.log('__________________BUKLCREATION UPDATE')
+                      console.log("__________________BUKLCREATION UPDATE");
                       //questionRes.push({ ...qRes.dataValues, options: optionRes });
                     });
                   } else {
@@ -270,7 +282,10 @@ const updatePoll = async (req, res) => {
                   // [ 1 ]
                 });
               } else {
-                console.log('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5inside else %%%%%%%%%%%%%%', questions[i])
+                console.log(
+                  "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5inside else %%%%%%%%%%%%%%",
+                  questions[i]
+                );
                 //insert
                 let updateQue = {
                   poll_id: request.id,
@@ -298,7 +313,7 @@ const updatePoll = async (req, res) => {
       }
     });
     //console.log("request-->>>>>", request);
-    return res.status(200).json('Record Updated successfully');
+    return res.status(200).json("Record Updated successfully");
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -378,14 +393,14 @@ const deletePoll = async (req, res, action = "") => {
         {
           model: PollQuestions,
           as: "questions",
-          attributes: ["id"],
-          include: [
+          attributes: ["id"]
+          /*  include: [
             {
               model: PollOptions,
               as: "options",
-              attributes: ['id', 'question_id']
+              attributes:['id','question_id']
             }
-          ]
+          ] */
         }
       ]
     });
@@ -410,8 +425,8 @@ const deletePoll = async (req, res, action = "") => {
             );
           }
         );
-      } else {
-        Polls.destroy({ where: { id: polls.id } }).then(deletePollRec => {
+      }else{
+        Polls.destroy({ where: { id: poll.id } }).then(deletePollRec => {
           return res
             .status(200)
             .json(`Poll ${pollId} deleted successfully`);
@@ -492,11 +507,11 @@ const getResult = async (req, res) => {
         }
         let options = Object.keys(responseStructure[questionId]);
         options.forEach(option => {
-          if (option !== 'total') {
+          if (option !== "total") {
             formattedResult[questionId][option] = Math.round(
               (responseStructure[questionId][option] /
                 responseStructure[questionId].total) *
-              100
+                100
             );
           }
         });
@@ -515,39 +530,39 @@ const getTopPolls = async (req, res) => {
     let pollsAttributes = ["id", "uuid", "title", "description", "status"];
     let pollQuestionsAttributes = ["id", "question"];
     let pollOptionsAttributes = ["id", "option"];
-    let where = {}
-    if (request.status !== undefined && request.status !== '') {
+    let where = {};
+    if (request.status !== undefined && request.status !== "") {
       where = {
         ...where,
         status: request.status
-      }
+      };
     }
-    if (request.fromDate !== undefined && request.fromDate !== '') {
+    if (request.fromDate !== undefined && request.fromDate !== "") {
       where = {
         ...where,
         start_date: {
           $gte: request.fromDate
         }
-      }
+      };
     }
-    if (request.endDate !== undefined && request.endDate !== '') {
+    if (request.endDate !== undefined && request.endDate !== "") {
       where = {
         ...where,
         end_date: {
           $lte: request.endDate
         }
-      }
+      };
     }
-    if (request.title !== undefined && request.title !== '') {
+    if (request.title !== undefined && request.title !== "") {
       where = {
         ...where,
         title: {
           [Op.like]: `%${request.title}%`
         }
-      }
+      };
     }
     let limit = 100;
-    if (request.limit !== undefined && request.limit !== '') {
+    if (request.limit !== undefined && request.limit !== "") {
       limit = request.limit;
     }
     let polls = await Polls.findAll({
@@ -571,18 +586,37 @@ const getTopPolls = async (req, res) => {
     });
 
     polls = JSON.parse(JSON.stringify(polls));
-    for (let pollIndex = 0; pollIndex < Object.keys(polls).length; pollIndex++) {
+    for (
+      let pollIndex = 0;
+      pollIndex < Object.keys(polls).length;
+      pollIndex++
+    ) {
       let poll_id = polls[pollIndex].id;
-      for (let questionIndex = 0; questionIndex < Object.keys(polls[pollIndex].questions).length; questionIndex++) {
+      for (
+        let questionIndex = 0;
+        questionIndex < Object.keys(polls[pollIndex].questions).length;
+        questionIndex++
+      ) {
         let question_id = polls[pollIndex].questions[questionIndex].id;
-        for (let optionIndes = 0; optionIndes < Object.keys(polls[pollIndex].questions[questionIndex].options).length; optionIndes++) {
-          let option_id = polls[pollIndex].questions[questionIndex].options[optionIndes].id;
+        for (
+          let optionIndes = 0;
+          optionIndes <
+          Object.keys(polls[pollIndex].questions[questionIndex].options).length;
+          optionIndes++
+        ) {
+          let option_id =
+            polls[pollIndex].questions[questionIndex].options[optionIndes].id;
           let resultRes = await PollResult.findOne({
             where: { poll_id, question_id, option_id },
-            attributes: ['percentage']
+            attributes: ["percentage"]
           });
-          let percentage = (resultRes !== undefined && resultRes !== null) ? resultRes.percentage : 0;
-          polls[pollIndex].questions[questionIndex].options[optionIndes].percentage = percentage;
+          let percentage =
+            resultRes !== undefined && resultRes !== null
+              ? resultRes.percentage
+              : 0;
+          polls[pollIndex].questions[questionIndex].options[
+            optionIndes
+          ].percentage = percentage;
         }
       }
     }

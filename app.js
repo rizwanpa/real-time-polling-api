@@ -16,6 +16,7 @@ const authRouter = require('./routes/auth');
 const adminRouter = require('./routes/admin');
 const pollsRouter = require('./routes/polls');
 const submitPoll = require('./routes/submitpoll')(app.getIOInstance);
+const submitVote = require('./routes/submitVote');
 
 const db = require("./models");
 db.sequelize.sync();
@@ -40,6 +41,7 @@ app.use('/login', authRouter);
 app.use('/admin', adminRouter);
 app.use('/polls', pollsRouter);
 app.use('/submitpoll', submitPoll);
+app.use('/submitvote', submitVote);
 
  app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
