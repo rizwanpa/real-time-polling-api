@@ -72,5 +72,5 @@ module.exports = (getIOInstance) => {
       });
     });
   });
-  return
+  return { submitPoll }
 }
