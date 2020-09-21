@@ -49,22 +49,39 @@ module.exports = (getIOInstance) => {
             });
           })
         });
-  
+        
         let finalResult = Object.keys(pollResultResponse).map((question_id, index) => {
           return pollResultResponse[question_id].map((optonObj) => {
             return { poll_id: pollId, question_id, ...optonObj }
           })
         });
+        
         let pollResult = [];
         for(let i=0;i < finalResult.length;i++){
           pollResult.push(...finalResult[i]);
         }
-        console.log('finaARRAY',pollResult)
         PollResult.bulkCreate(pollResult, { updateOnDuplicate: ["percentage"] }).then((resultObj) => {
-          //console.log(resultObj);
+          console.log('PollResult !!!!!!!!!!!!!!!!!!!!!!!!!!!!! return value',JSON.parse(JSON.stringify(resultObj)));
+          let PollResultJson = JSON.parse(JSON.stringify(resultObj));
+          let updatedPollResult = {};
+          
+          PollResultJson.forEach(resultObj => {
+            if (!updatedPollResult[resultObj.poll_id]) {
+              updatedPollResult[resultObj.poll_id] = {}
+            }
+            if (!updatedPollResult[resultObj.poll_id][resultObj.question_id]) {
+              updatedPollResult[resultObj.poll_id][resultObj.question_id] = {
+                options:{}
+              }
+            }
+            if (!updatedPollResult[resultObj.poll_id][resultObj.question_id]['options'][resultObj.option_id]) {
+              let percentage = (resultObj.percentage % 1) >= 0.5 ? Math.ceil(resultObj.percentage) : Math.floor(resultObj.percentage);
+              updatedPollResult[resultObj.poll_id][resultObj.question_id]['options'][resultObj.option_id] = {percentage : percentage}
+            }
+          });
 
           // send this updated result via socket by calling getIOInstance
-          getIOInstance().sockets.emit('refresh-poll-list', {});
+          getIOInstance().sockets.emit('refresh-poll-list', updatedPollResult);
           done();
           console.log('COMPLETED HERE', job.id);
           //implemant socket here...

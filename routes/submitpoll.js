@@ -30,7 +30,6 @@ module.exports = (getIOInstance) => {
             })
           })
         })
-        console.log('===>',poll.id,finalRequest);
         
         // add to queue and send response via socket
         try {
