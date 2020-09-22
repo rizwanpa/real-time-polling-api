@@ -82,6 +82,8 @@ module.exports = (getIOInstance) => {
 
           // send this updated result via socket by calling getIOInstance
           getIOInstance().sockets.emit('refresh-poll-list', updatedPollResult);
+          
+
           done();
           console.log('COMPLETED HERE', job.id);
           //implemant socket here...

@@ -7,9 +7,9 @@ const { Polls, PollResponse } = require("../models");
 
 
 module.exports = (getIOInstance) => {
+  var { submitPoll } = require('../queues/submitandnotify')(getIOInstance);
   router.post("/", async (req, res) => {
     try {
-      const { submitPoll } = require('../queues/submitandnotify')(getIOInstance);
       let pollResponse = req.body;
       console.log(pollResponse)
       let polls = await Polls.findAll({
