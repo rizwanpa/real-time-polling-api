@@ -164,6 +164,8 @@ const getResult = async (req, res) => {
   }
 };
 
+const getRandomColor = () => '#'+Math.floor(Math.random()*16777215).toString(16);
+
 const getTopPolls = async (req, res) => {
   try {
     let request = req.body;
@@ -257,6 +259,9 @@ const getTopPolls = async (req, res) => {
           polls[pollIndex].questions[questionIndex].options[
             optionIndes
           ].percentage = percentage;
+          polls[pollIndex].questions[questionIndex].options[
+            optionIndes
+          ].color = getRandomColor();
         }
       }
     }
