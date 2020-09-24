@@ -3,7 +3,7 @@ var express = require("express");
 var router = express.Router();
 const jwtmiddleware = require('../jwt/jwtmiddleware');
 const Polls  = require('../controllers/Polls');
-const {deletePoll} = require('../controllers/DeletePollController');
+const {deletePoll, deletePollOption, deletePollQuestion} = require('../controllers/DeletePollController');
 const {createPoll} = require('../controllers/CreatePollController');
 const {updatePoll} = require('../controllers/UpdatePollController');
 
@@ -47,5 +47,22 @@ router.delete("/:id", jwtmiddleware, deletePoll);
 */
 
 router.post("/getTopPolls", jwtmiddleware, Polls.getTopPolls);
+
+/* 
+* URI : http://localhost:3030/deleteOption/:optionId
+* Method : DELETE
+* Params : option id [*mandatory]* 
+*
+*/
+router.delete("/deleteOption/:optionId", jwtmiddleware, deletePollOption);
+
+
+/* 
+* URI : http://localhost:3030/deleteQuestion/:questionId
+* Method : DELETE
+* Params : Question id [*mandatory]* 
+*
+*/
+router.delete("/deleteQuestion/:questionId", jwtmiddleware, deletePollQuestion);
 
 module.exports = router;

@@ -38,8 +38,7 @@ const deletePoll = async (req, res, action = "") => {
     }
     polls = polls[0];
     if (polls.questions !== undefined) {
-        let questionIds = polls.questions.map(val => val.id);
-        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@polls++++++++", questionIds.length);
+      let questionIds = polls.questions.map(val => val.id);
       if (questionIds.length) {
         PollOptions.destroy({ where: { id: questionIds } }).then(
           deleteOptions => {
@@ -67,6 +66,39 @@ const deletePoll = async (req, res, action = "") => {
   }
 };
 
+const deletePollOption = async (req, res) => {
+  try {
+    let optionId = req.params.optionId !== undefined ? req.params.optionId : req.body.optionId;
+    if(!optionId){
+      return res.status(200).json(`Option id not found!`);
+    }
+    PollOptions.destroy({ where: { id: optionId } }).then(deletePollOptionRec => {
+      return res.status(200).json(`Option ${optionId} deleted successfully`);
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+const deletePollQuestion = async (req, res) => {
+  try {
+    let questionId = req.params.questionId !== undefined ? req.params.questionId : req.body.questionId;
+    if(!questionId){
+      return res.status(200).json(`Question id not found!`);
+    }
+    PollOptions.destroy({ where: { question_id: questionId } }).then(deletePollOptionRec => {
+      PollQuestions.destroy({ where: { id: questionId } }).then(
+        deleteQueston => {
+          return res.status(200).json(`Question ${questionId} deleted successfully`);
+        })
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
-  deletePoll
+  deletePoll,
+  deletePollOption,
+  deletePollQuestion
 };
