@@ -2,7 +2,7 @@ require('dotenv').config();
 var express = require("express");
 var router = express.Router();
 const jwtmiddleware = require('../jwt/jwtmiddleware');
-const Polls  = require('../controllers/Polls');
+const Polls  = require('../controllers/GetPollsController');
 const {deletePoll, deletePollOption, deletePollQuestion} = require('../controllers/DeletePollController');
 const {createPoll} = require('../controllers/CreatePollController');
 const {updatePoll} = require('../controllers/UpdatePollController');

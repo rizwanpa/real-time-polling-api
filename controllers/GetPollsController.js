@@ -6,7 +6,7 @@ const {
   PollResult
 } = require("../models");
 
-const { generateUuid } = require("./../helpers/uuid");
+const { generateUuid } = require("../helpers/uuid");
 const jwt = require("jsonwebtoken");
 const { Op } = require("sequelize");
 
