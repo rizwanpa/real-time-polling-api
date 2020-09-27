@@ -4,17 +4,24 @@ const {
     PollOptions
   } = require("../models");
   
-  const { generateUuid } = require("./../helpers/uuid");
-  const jwt = require("jsonwebtoken");
+  
   const { Op } = require("sequelize");
 
 
   const getPoll = async (req, res) => {
     try {
       let pollId = req.params.id !== undefined ? req.params.id : req.body.id;
+      let currentDateTime = Math.floor(Date.now()/1000)
+      console.log('====>',currentDateTime, typeof currentDateTime);
       let poll = await Polls.findAll({
         where: {
             status : 'published',
+            start_date: {
+              [Op.lte]: currentDateTime
+            },
+            end_date: {
+              [Op.gte]: currentDateTime
+            },
           [Op.or]: [{ id: pollId }, { uuid: pollId }]
         },
         include: [
