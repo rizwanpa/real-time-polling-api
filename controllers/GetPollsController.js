@@ -168,7 +168,7 @@ const getRandomColor = () => '#'+Math.floor(Math.random()*16777215).toString(16)
 const getTopPolls = async (req, res) => {
   try {
     let request = req.body;
-    let pollsAttributes = ["id", "uuid", "title", "description", "status"];
+    let pollsAttributes = ["id", "uuid", "title", "description", "status", "start_date", "end_date"];
     let pollQuestionsAttributes = ["id", "question"];
     let pollOptionsAttributes = ["id", "option"];
     let where = {};
@@ -182,7 +182,7 @@ const getTopPolls = async (req, res) => {
       where = {
         ...where,
         start_date: {
-          $gte: request.fromDate
+          [Op.lte]: request.fromDate
         }
       };
     }
@@ -190,7 +190,7 @@ const getTopPolls = async (req, res) => {
       where = {
         ...where,
         end_date: {
-          $lte: request.endDate
+          [Op.gte]: request.endDate
         }
       };
     }

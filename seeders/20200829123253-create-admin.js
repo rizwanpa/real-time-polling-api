@@ -9,7 +9,7 @@ module.exports = {
     }, ['id']);
     return queryInterface.bulkInsert('Users', [{
       name: 'Admin',
-      email: 'admin@example.com',
+      email: 'admin@realtimepolling.com',
       role:roleId,
       password: Buffer.from('passw0rd!').toString('base64'),
       createdAt: new Date(),
